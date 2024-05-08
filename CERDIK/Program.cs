@@ -11,6 +11,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        SmJadwal smJadwal = new SmJadwal();
         string pilihMenu;
         string pilihRole;
 
@@ -41,36 +42,38 @@ public class Program
         {
             Console.WriteLine("Login Sukses!");
             Menus.menuNakes();
-            HandleNakesMenu();
+            HandleNakesMenu(smJadwal);
         }
         else if (pilihMenu == "2" && pilihRole == "2")
         {
             Console.WriteLine("Daftar Sukses!");
             Menus.menuNakes();
-            HandleNakesMenu();
+            HandleNakesMenu(smJadwal);
+
         }
 
         Console.WriteLine("Pilihan:");
         pilihMenu = Console.ReadLine();
     }
 
-    public static void HandleNakesMenu()
+    public static void HandleNakesMenu(SmJadwal smJadwal)
     {
-        SmJadwal smJadwal = new SmJadwal(); // Membuat instansi baru dari SmJadwal
-
         Console.WriteLine("Pilih opsi:");
         string pilihan = Console.ReadLine();
 
         if (pilihan == "1")
         {
             // Lihat Jadwal
+            LihatJadwal(smJadwal);
+            Menus.menuNakes();
+            HandleNakesMenu(smJadwal);
         }
         else if (pilihan == "2")
         {
             // Menambahkan Jadwal
             TambahkanJadwal(smJadwal);
             Menus.menuNakes();
-            HandleNakesMenu();
+            HandleNakesMenu(smJadwal);
         }
         else if (pilihan == "3")
         {
@@ -85,7 +88,7 @@ public class Program
             // Edit Jadwal
             EditJadwal(smJadwal);
             Menus.menuNakes();
-            HandleNakesMenu();
+            HandleNakesMenu(smJadwal);
         }
         else
         {
@@ -95,13 +98,6 @@ public class Program
 
     public static void TambahkanJadwal(SmJadwal smJadwal)
     {
-        TimeSpan waktuInput;
-        do
-        {
-            Console.WriteLine("Masukkan waktu (format: HH:mm):");
-        }
-        while (!TimeSpan.TryParseExact(Console.ReadLine(), @"hh\:mm", CultureInfo.InvariantCulture, out waktuInput));
-
         Console.WriteLine("Masukkan nama penyakit:");
         string penyakit = Console.ReadLine();
 
@@ -111,37 +107,80 @@ public class Program
         Console.WriteLine("Masukkan dosis obat:");
         string dosis = Console.ReadLine();
 
-        smJadwal.TambahJadwal(new Jadwal(DateTime.Today.Add(waktuInput), penyakit, obat, dosis));
-
+        smJadwal.TambahJadwal(new Jadwal(penyakit, obat, dosis));
         Console.WriteLine("Jadwal berhasil ditambahkan!");
+    }
+
+    public static void LihatJadwal(SmJadwal smJadwal)
+    {
+        var jadwalArray = smJadwal.GetJadwalArray();
+
+        if (jadwalArray.Length > 0)
+        {
+            Console.WriteLine("Daftar Jadwal:");
+
+            foreach (var jadwal in jadwalArray)
+            {
+                Console.WriteLine($"ID Jadwal: {jadwal.IdJadwal}");
+                Console.WriteLine($"Penyakit: {jadwal.Penyakit}");
+                Console.WriteLine($"Obat: {jadwal.Obat}");
+                Console.WriteLine($"Dosis: {jadwal.Dosis}");
+                Console.WriteLine();
+            }
+        }
+        else
+        {
+            Console.WriteLine("Tidak ada jadwal yang tersedia.");
+        }
     }
 
     public static void EditJadwal(SmJadwal smJadwal)
     {
-        Console.WriteLine("Masukkan waktu jadwal yang ingin diedit (format: HH:mm):");
-        TimeSpan waktuInput;
-        while (!TimeSpan.TryParseExact(Console.ReadLine(), @"hh\:mm", CultureInfo.InvariantCulture, out waktuInput))
+        var jadwalArray = smJadwal.GetJadwalArray();
+
+        if (jadwalArray.Length > 0)
         {
-            Console.WriteLine("Format waktu tidak valid. Masukkan waktu dalam format HH:mm:");
-        }
+            Console.WriteLine("Daftar Jadwal:");
 
-        Jadwal jadwalToUpdate = smJadwal.jadwalList.Find(j => j.Waktu.TimeOfDay == waktuInput);
-
-        if (jadwalToUpdate != null)
-        {
-            Console.WriteLine("Masukkan nama penyakit baru:");
-            string penyakit = Console.ReadLine();
-
-            Console.WriteLine("Masukkan nama obat baru:");
-            string obat = Console.ReadLine();
-
-            Console.WriteLine("Masukkan dosis obat baru:");
-            string dosis = Console.ReadLine();
-
-            Jadwal editedJadwal = new Jadwal(jadwalToUpdate.Waktu, penyakit, obat, dosis);
-
-            if (smJadwal.EditJadwal(waktuInput, editedJadwal))
+            for (int i = 0; i < jadwalArray.Length; i++)
             {
+                Console.WriteLine($"ID Jadwal: {jadwalArray[i].IdJadwal}");
+                Console.WriteLine($"Penyakit: {jadwalArray[i].Penyakit}");
+                Console.WriteLine($"Obat: {jadwalArray[i].Obat}");
+                Console.WriteLine($"Dosis: {jadwalArray[i].Dosis}");
+                Console.WriteLine();
+            }
+
+            // Meminta input untuk memilih jadwal yang akan diedit
+            Console.WriteLine("Masukkan ID Jadwal yang ingin diedit:");
+            int idJadwal;
+            while (!int.TryParse(Console.ReadLine(), out idJadwal))
+            {
+                Console.WriteLine("Input tidak valid. Masukkan ID Jadwal dengan angka:");
+            }
+
+            // Mencari jadwal yang sesuai dengan ID yang dimasukkan pengguna
+            Jadwal jadwalToEdit = jadwalArray.FirstOrDefault(j => j.IdJadwal == idJadwal);
+
+            if (jadwalToEdit != null)
+            {
+                // Meminta input untuk informasi jadwal yang diperbarui
+                Console.WriteLine("Masukkan informasi baru:");
+
+                Console.WriteLine("Masukkan nama penyakit baru:");
+                string newPenyakit = Console.ReadLine();
+
+                Console.WriteLine("Masukkan nama obat baru:");
+                string newObat = Console.ReadLine();
+
+                Console.WriteLine("Masukkan dosis obat baru:");
+                string newDosis = Console.ReadLine();
+
+                // Mengupdate informasi jadwal
+                jadwalToEdit.Penyakit = newPenyakit;
+                jadwalToEdit.Obat = newObat;
+                jadwalToEdit.Dosis = newDosis;
+
                 Console.WriteLine("Jadwal berhasil diperbarui!");
             }
             else
@@ -151,7 +190,7 @@ public class Program
         }
         else
         {
-            Console.WriteLine("Jadwal tidak ditemukan!");
+            Console.WriteLine("Tidak ada jadwal yang tersedia.");
         }
     }
 

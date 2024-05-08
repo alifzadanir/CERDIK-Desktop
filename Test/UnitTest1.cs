@@ -10,54 +10,39 @@ namespace UnitTestProject
     public class ProgramTests
     {
         [TestMethod]
-        public void TestTambahkanJadwal_ValidInput()
-        {
-            // Arrange
-            var smJadwal = new SmJadwal();
-            var input = new StringReader("12:00\nFlu\nParacetamol\n500mg\n");
-            Console.SetIn(input);
-            StringWriter output = new StringWriter();
-            Console.SetOut(output);
-
-            // Act
-            Program.TambahkanJadwal(smJadwal);
-
-            // Assert
-            StringAssert.Contains(output.ToString(), "Jadwal berhasil ditambahkan!");
-        }
-
-        [TestMethod]
-        public void TestTambahkanJadwal_InvalidTimeFormat()
-        {
-            // Arrange
-            var smJadwal = new SmJadwal();
-            var input = new StringReader("12:00:00\n12:00 AM\n");
-            Console.SetIn(input);
-            StringWriter output = new StringWriter();
-            Console.SetOut(output);
-
-            // Act
-            Program.TambahkanJadwal(smJadwal);
-
-            // Assert
-            StringAssert.Contains(output.ToString(), "Masukkan jam (format: HH:mm):");
-        }
-        [TestMethod]
-        public void Test_EditJadwal()
+        public void TestTambahJadwal()
         {
             SmJadwal smJadwal = new SmJadwal();
-            TimeSpan waktu = new TimeSpan(12, 0, 0); // Waktu contoh: 12:00 PM
-            Jadwal jadwalBaru = new Jadwal(DateTime.Today.Add(waktu), "Flu", "Obat Flu", "2 pil");
+            Jadwal jadwal = new Jadwal("Flu", "Paracetamol", "500 mg");
+            smJadwal.TambahJadwal(jadwal);
+            Jadwal[] jadwalArray = smJadwal.GetJadwalArray();
+            Assert.AreEqual(1, jadwalArray.Length);
+        }
 
-            smJadwal.TambahJadwal(jadwalBaru);
+        [TestMethod]
+        public void TestLihatJadwal()
+        {
+            SmJadwal smJadwal = new SmJadwal();
+            Jadwal jadwal1 = new Jadwal("Flu", "Paracetamol", "500 mg");
+            Jadwal jadwal2 = new Jadwal("Demam", "Ibuprofen", "400 mg");
+            smJadwal.TambahJadwal(jadwal1);
+            smJadwal.TambahJadwal(jadwal2);
+            Jadwal[] jadwalArray = smJadwal.GetJadwalArray();
+            Assert.AreEqual(2, jadwalArray.Length);
+        }
 
-            Jadwal jadwalSetelahEdit = new Jadwal(DateTime.Today.Add(waktu), "Demam", "Obat Demam", "3 pil");
-            bool editSuccess = smJadwal.EditJadwal(waktu, jadwalSetelahEdit);
-
-            Assert.IsTrue(editSuccess); // Pastikan edit berhasil dilakukan
-            Assert.AreEqual("Demam", jadwalBaru.Penyakit); // Verifikasi bahwa penyakit telah diubah
-            Assert.AreEqual("Obat Demam", jadwalBaru.Obat); // Verifikasi bahwa obat telah diubah
-            Assert.AreEqual("3 pil", jadwalBaru.Dosis); // Verifikasi bahwa dosis telah diubah
+        [TestMethod]
+        public void TestEditJadwal()
+        {
+            SmJadwal smJadwal = new SmJadwal();
+            Jadwal jadwal1 = new Jadwal("Flu", "Paracetamol", "500 mg");
+            smJadwal.TambahJadwal(jadwal1);
+            Jadwal[] jadwalArray = smJadwal.GetJadwalArray();
+            Jadwal editedJadwal = new Jadwal(jadwalArray[0].IdJadwal, "Demam", "Ibuprofen", "400 mg");
+            smJadwal.EditJadwal(jadwalArray[0].IdJadwal, editedJadwal);
+            Jadwal[] editedJadwalArray = smJadwal.GetJadwalArray();
+            Assert.AreEqual("Demam", editedJadwalArray[0].Penyakit);
         }
     }
+    
 }
