@@ -1,0 +1,6 @@
+@API_CERDIK_HostAddress = http://localhost:5263
+
+GET {{API_CERDIK_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
